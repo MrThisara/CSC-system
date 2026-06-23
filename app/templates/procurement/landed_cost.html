@@ -1,0 +1,47 @@
+{% extends "layouts/base.html" %}
+{% block title %}Landed Cost{% endblock %}
+{% block page_title %}Landed Cost — Shipment #{{ shipment.id }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">Record Landed Cost</div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.freight.label(class="form-label") }}
+                        {{ form.freight(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.import_duty.label(class="form-label") }}
+                        {{ form.import_duty(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.insurance.label(class="form-label") }}
+                        {{ form.insurance(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.other.label(class="form-label") }}
+                        {{ form.other(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.currency_id.label(class="form-label") }}
+                        {{ form.currency_id(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.exchange_rate.label(class="form-label") }}
+                        {{ form.exchange_rate(class="form-control") }}
+                    </div>
+                    <div class="d-flex gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('procurement.po_detail', id=shipment.po_id) }}"
+                           class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

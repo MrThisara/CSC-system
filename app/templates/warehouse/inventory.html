@@ -1,0 +1,64 @@
+{% extends "layouts/base.html" %}
+{% block title %}Inventory{% endblock %}
+{% block page_title %}Warehouse Inventory{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>SKU</th>
+                    <th>Product</th>
+                    <th>Unit</th>
+                    <th>Warehouse Stock</th>
+                    <th>W. Reorder At</th>
+                    <th>Shelf Stock</th>
+                    <th>S. Reorder At</th>
+                    <th>AVCO (JPY)</th>
+                    <th>Stock Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td class="fw-semibold">{{ p.sku }}</td>
+                    <td>{{ p.name }}</td>
+                    <td>{{ p.unit.abbreviation if p.unit else '—' }}</td>
+                    <td>
+                        {% if p.warehouse_stock <= p.warehouse_reorder_threshold %}
+                            <span class="text-danger fw-semibold">
+                                {{ p.warehouse_stock }}
+                                <i class="bi bi-exclamation-triangle-fill ms-1"></i>
+                            </span>
+                        {% else %}
+                            {{ p.warehouse_stock }}
+                        {% endif %}
+                    </td>
+                    <td>{{ p.warehouse_reorder_threshold }}</td>
+                    <td>
+                        {% if p.shelf_stock <= p.shelf_reorder_threshold %}
+                            <span class="text-warning fw-semibold">
+                                {{ p.shelf_stock }}
+                                <i class="bi bi-exclamation-triangle-fill ms-1"></i>
+                            </span>
+                        {% else %}
+                            {{ p.shelf_stock }}
+                        {% endif %}
+                    </td>
+                    <td>{{ p.shelf_reorder_threshold }}</td>
+                    <td>¥{{ '{:,.2f}'.format(p.avco_cost) }}</td>
+                    <td>¥{{ '{:,.0f}'.format(p.warehouse_stock * p.avco_cost) }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-3">
+                        No products found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

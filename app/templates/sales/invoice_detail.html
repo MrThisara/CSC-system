@@ -1,0 +1,108 @@
+{% extends "layouts/base.html" %}
+{% block title %}{{ invoice.invoice_number }}{% endblock %}
+{% block page_title %}Invoice {{ invoice.invoice_number }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <h4 class="mb-1">{{ invoice.invoice_number }}</h4>
+                        <div class="text-muted">{{ invoice.issued_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                    </div>
+                    <div class="text-end">
+                        {% if invoice.sale.sale_type == 'walk_in' %}
+                            <span class="badge bg-secondary fs-6">Walk-in Sale</span>
+                        {% else %}
+                            <span class="badge bg-primary fs-6">Bulk Order</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="text-muted small mb-1">Customer</div>
+                        <div class="fw-semibold">
+                            {{ invoice.sale.bulk_buyer.full_name
+                               if invoice.sale.bulk_buyer else 'Walk-in Customer' }}
+                        </div>
+                        {% if invoice.sale.bulk_buyer %}
+                        <div class="small text-muted">
+                            {{ invoice.sale.bulk_buyer.phone or '' }}<br>
+                            {{ invoice.sale.bulk_buyer.email or '' }}<br>
+                            {{ invoice.sale.bulk_buyer.delivery_address or '' }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-muted small mb-1">Sale Reference</div>
+                        <div class="fw-semibold">{{ invoice.sale.sale_number }}</div>
+                        <div class="text-muted small">
+                            Issued by {{ invoice.issued_by.full_name
+                                         if invoice.issued_by else '—' }}
+                        </div>
+                    </div>
+                </div>
+
+                <table class="table mb-4">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-end">Qty</th>
+                            <th class="text-end">Unit Price</th>
+                            <th class="text-end">Line Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in invoice.sale.items %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td class="text-end">{{ item.quantity }}</td>
+                            <td class="text-end">
+                                ¥{{ '{:,.0f}'.format(item.unit_price) }}
+                            </td>
+                            <td class="text-end">
+                                ¥{{ '{:,.0f}'.format(item.line_total) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end text-muted">Subtotal</td>
+                            <td class="text-end">
+                                ¥{{ '{:,.0f}'.format(invoice.sale.subtotal) }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-end text-muted">
+                                Tax ({{ (invoice.sale.tax_rate * 100)|int }}%)
+                            </td>
+                            <td class="text-end">
+                                ¥{{ '{:,.0f}'.format(invoice.sale.tax_amount) }}
+                            </td>
+                        </tr>
+                        <tr class="fw-semibold">
+                            <td colspan="3" class="text-end">Total</td>
+                            <td class="text-end fs-5">
+                                ¥{{ '{:,.0f}'.format(invoice.sale.total) }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('sales.invoices') }}"
+                       class="btn btn-outline-secondary">
+                        Back to Invoices
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

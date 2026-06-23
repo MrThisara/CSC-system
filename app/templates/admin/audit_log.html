@@ -1,0 +1,152 @@
+{% extends "layouts/base.html" %}
+{% block title %}Audit Log{% endblock %}
+{% block page_title %}Audit Log{% endblock %}
+
+{% block content %}
+
+<!-- Filters -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">Filters</div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('admin.audit_log') }}">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">Tier</label>
+                    <select name="tier" class="form-select form-select-sm">
+                        <option value="">All</option>
+                        <option value="critical"
+                            {{ 'selected' if filters.tier == 'critical' }}>
+                            Critical
+                        </option>
+                        <option value="standard"
+                            {{ 'selected' if filters.tier == 'standard' }}>
+                            Standard
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Action</label>
+                    <input type="text" name="action" class="form-control form-control-sm"
+                           placeholder="e.g. po_approved"
+                           value="{{ filters.action }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">User</label>
+                    <select name="user_id" class="form-select form-select-sm">
+                        <option value="">All Users</option>
+                        {% for u in all_users %}
+                        <option value="{{ u.id }}"
+                            {{ 'selected' if filters.user_id == u.id|string }}>
+                            {{ u.full_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Date From</label>
+                    <input type="date" name="date_from"
+                           class="form-control form-control-sm"
+                           value="{{ filters.date_from }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Date To</label>
+                    <input type="date" name="date_to"
+                           class="form-control form-control-sm"
+                           value="{{ filters.date_to }}">
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+                <a href="{{ url_for('admin.audit_log') }}"
+                   class="btn btn-outline-secondary btn-sm">
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results -->
+<div class="card shadow-sm">
+    <div class="card-header fw-semibold d-flex justify-content-between">
+        <span>Audit Entries</span>
+        <span class="text-muted small">{{ entries|length }} results</span>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Tier</th>
+                    <th>Action</th>
+                    <th>Entity</th>
+                    <th>Description</th>
+                    <th>Old Value</th>
+                    <th>New Value</th>
+                    <th>Performed By</th>
+                    <th>IP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in entries %}
+                <tr>
+                    <td class="text-muted small">
+                        {{ e.performed_at.strftime('%Y-%m-%d %H:%M') }}
+                    </td>
+                    <td>
+                        {% if e.tier == 'critical' %}
+                            <span class="badge bg-danger">Critical</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Standard</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="text-monospace small">
+                            {{ e.action }}
+                        </span>
+                    </td>
+                    <td class="small">
+                        {% if e.entity_type %}
+                            {{ e.entity_type.replace('_', ' ').title() }}
+                            {% if e.entity_id %}
+                                #{{ e.entity_id }}
+                            {% endif %}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td class="small">{{ e.description or '—' }}</td>
+                    <td class="small text-muted">
+                        {% if e.old_value %}
+                            <span class="text-danger">{{ e.old_value }}</span>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">
+                        {% if e.new_value %}
+                            <span class="text-success">{{ e.new_value }}</span>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td class="small">
+                        {{ e.performed_by.full_name if e.performed_by else '—' }}
+                    </td>
+                    <td class="small text-muted">{{ e.ip_address or '—' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-3">
+                        No audit entries found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

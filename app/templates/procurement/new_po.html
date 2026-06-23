@@ -1,0 +1,43 @@
+{% extends "layouts/base.html" %}
+{% block title %}New Purchase Order{% endblock %}
+{% block page_title %}New Purchase Order{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.supplier_id.label(class="form-label") }}
+                        {{ form.supplier_id(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.currency_id.label(class="form-label") }}
+                        {{ form.currency_id(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.exchange_rate.label(class="form-label") }}
+                        {{ form.exchange_rate(class="form-control",
+                           placeholder="e.g. 149.50 for 1 USD = 149.50 JPY") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.expected_delivery.label(class="form-label") }}
+                        {{ form.expected_delivery(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.notes.label(class="form-label") }}
+                        {{ form.notes(class="form-control", rows=3) }}
+                    </div>
+                    <div class="d-flex gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('procurement.purchase_orders') }}"
+                           class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,371 @@
+{% extends "layouts/base.html" %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Reports & Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-primary">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Total Inventory Value</div>
+                <div class="fs-4 fw-semibold text-primary">
+                    ¥{{ '{:,.0f}'.format(total_inventory_value) }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-danger">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Total Owed to Suppliers</div>
+                <div class="fs-4 fw-semibold text-danger">
+                    ¥{{ '{:,.0f}'.format(total_owed) }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-warning">
+            <div class="card-body">
+                <div class="text-muted small mb-1">FX Cost This Month</div>
+                <div class="fs-4 fw-semibold text-warning">
+                    ¥{{ '{:,.0f}'.format(total_fx_loss) }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-success">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Products Tracked</div>
+                <div class="fs-4 fw-semibold text-success">
+                    {{ profit_margins|length }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report 1: Profit Margins -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-graph-up me-2"></i>
+        Report 1 — Actual Profit Margin per Product
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Product</th>
+                    <th>Selling Price</th>
+                    <th>AVCO Cost</th>
+                    <th>Margin (JPY)</th>
+                    <th>Margin %</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in profit_margins %}
+                <tr>
+                    <td class="fw-semibold">{{ row.product.name }}</td>
+                    <td>¥{{ '{:,.0f}'.format(row.product.selling_price) }}</td>
+                    <td>¥{{ '{:,.2f}'.format(row.product.avco_cost) }}</td>
+                    <td>
+                        <span class="{{ 'text-success' if row.margin >= 0
+                                        else 'text-danger' }}">
+                            ¥{{ '{:,.2f}'.format(row.margin) }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if row.margin_pct >= 30 %}
+                            <span class="badge bg-success">
+                                {{ row.margin_pct }}%
+                            </span>
+                        {% elif row.margin_pct >= 10 %}
+                            <span class="badge bg-warning">
+                                {{ row.margin_pct }}%
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger">
+                                {{ row.margin_pct }}%
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-3">
+                        No product data yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Report 2: Fast vs Slow Moving Stock -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-arrow-left-right me-2"></i>
+        Report 2 — Fast vs Slow Moving Stock (Last 30 Days)
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Product</th>
+                    <th>Units Sold (30 days)</th>
+                    <th>Warehouse Stock</th>
+                    <th>Shelf Stock</th>
+                    <th>Movement</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in stock_movement %}
+                <tr>
+                    <td class="fw-semibold">{{ row.product.name }}</td>
+                    <td>{{ row.sold_30_days }}</td>
+                    <td>{{ row.product.warehouse_stock }}</td>
+                    <td>{{ row.product.shelf_stock }}</td>
+                    <td>
+                        {% if row.status == 'Fast' %}
+                            <span class="badge bg-success">Fast Moving</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Slow Moving</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-3">
+                        No sales data yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Report 3: What We Owe Suppliers -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-arrow-up-circle me-2"></i>
+        Report 3 — Outstanding Supplier Payables
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Supplier</th>
+                    <th>PO</th>
+                    <th>Amount Due</th>
+                    <th>Amount Paid</th>
+                    <th>Balance</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in unpaid_payables %}
+                <tr>
+                    <td class="fw-semibold">{{ p.supplier.name }}</td>
+                    <td>{{ p.purchase_order.po_number
+                           if p.purchase_order else '—' }}</td>
+                    <td>¥{{ '{:,.2f}'.format(p.amount_due) }}</td>
+                    <td>¥{{ '{:,.2f}'.format(p.amount_paid) }}</td>
+                    <td class="text-danger fw-semibold">
+                        ¥{{ '{:,.2f}'.format(p.amount_due - p.amount_paid) }}
+                    </td>
+                    <td>{{ p.due_date or '—' }}</td>
+                    <td>
+                        {% if p.status == 'Partial' %}
+                            <span class="badge bg-warning">Partial</span>
+                        {% else %}
+                            <span class="badge bg-danger">Unpaid</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-3">
+                        No outstanding payables.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if unpaid_payables %}
+            <tfoot class="table-light">
+                <tr>
+                    <td colspan="4" class="text-end fw-semibold">Total Owed:</td>
+                    <td class="text-danger fw-semibold">
+                        ¥{{ '{:,.2f}'.format(total_owed) }}
+                    </td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+<!-- Report 4: Inventory Value (already in summary cards, expand here) -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-boxes me-2"></i>
+        Report 4 — Current Inventory Value by Product
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Product</th>
+                    <th>Warehouse Stock</th>
+                    <th>AVCO Cost</th>
+                    <th>Stock Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in profit_margins %}
+                <tr>
+                    <td class="fw-semibold">{{ row.product.name }}</td>
+                    <td>{{ row.product.warehouse_stock }}</td>
+                    <td>¥{{ '{:,.2f}'.format(row.product.avco_cost) }}</td>
+                    <td class="fw-semibold">
+                        ¥{{ '{:,.0f}'.format(
+                            row.product.warehouse_stock * row.product.avco_cost
+                        ) }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-3">
+                        No inventory data yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if profit_margins %}
+            <tfoot class="table-light">
+                <tr>
+                    <td colspan="3" class="text-end fw-semibold">Total:</td>
+                    <td class="fw-semibold text-primary">
+                        ¥{{ '{:,.0f}'.format(total_inventory_value) }}
+                    </td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+<!-- Report 5: Best Value Supplier -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-trophy me-2"></i>
+        Report 5 — Best Value Supplier (After All Costs)
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Rank</th>
+                    <th>Supplier</th>
+                    <th>Total Product Cost (JPY)</th>
+                    <th>Total Landed Cost (JPY)</th>
+                    <th>Total Units</th>
+                    <th>Avg Cost Per Unit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in supplier_costs %}
+                <tr>
+                    <td>
+                        {% if loop.index == 1 %}
+                            <span class="badge bg-success">#1 Best</span>
+                        {% elif loop.index == 2 %}
+                            <span class="badge bg-primary">#2</span>
+                        {% elif loop.index == 3 %}
+                            <span class="badge bg-secondary">#3</span>
+                        {% else %}
+                            #{{ loop.index }}
+                        {% endif %}
+                    </td>
+                    <td class="fw-semibold">{{ row.supplier.name }}</td>
+                    <td>¥{{ '{:,.2f}'.format(row.total_product_cost) }}</td>
+                    <td>¥{{ '{:,.2f}'.format(row.total_landed) }}</td>
+                    <td>{{ row.total_units }}</td>
+                    <td class="fw-semibold">
+                        ¥{{ '{:,.4f}'.format(row.avg_total_cost_per_unit) }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-3">
+                        No supplier cost data yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Report 6: Currency Fluctuation -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-currency-exchange me-2"></i>
+        Report 6 — Currency Fluctuation Cost This Month
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>PO Number</th>
+                    <th>Product</th>
+                    <th>Currency</th>
+                    <th>Exchange Rate</th>
+                    <th>FX Impact (JPY)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in fx_impact %}
+                <tr>
+                    <td class="fw-semibold">{{ row.po.po_number }}</td>
+                    <td>{{ row.product.name }}</td>
+                    <td>{{ row.currency }}</td>
+                    <td>{{ row.exchange_rate }}</td>
+                    <td>
+                        <span class="{{ 'text-danger' if row.fx_loss > 0
+                                        else 'text-success' }}">
+                            ¥{{ '{:,.2f}'.format(row.fx_loss) }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-3">
+                        No FX data this month.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if fx_impact %}
+            <tfoot class="table-light">
+                <tr>
+                    <td colspan="4" class="text-end fw-semibold">
+                        Total FX Cost:
+                    </td>
+                    <td class="text-danger fw-semibold">
+                        ¥{{ '{:,.2f}'.format(total_fx_loss) }}
+                    </td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+{% endblock %}

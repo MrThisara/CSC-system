@@ -1,0 +1,101 @@
+{% extends "layouts/base.html" %}
+{% block title %}Ledger{% endblock %}
+{% block page_title %}Ledger{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">Add Manual Entry</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('accounting.add_ledger_entry') }}">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.entry_type.label(class="form-label") }}
+                        {{ form.entry_type(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows=2) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.amount.label(class="form-label") }}
+                        {{ form.amount(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.currency_id.label(class="form-label") }}
+                        {{ form.currency_id(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.exchange_rate.label(class="form-label") }}
+                        {{ form.exchange_rate(class="form-control") }}
+                    </div>
+                    <div class="mb-3 form-check">
+                        {{ form.is_manual(class="form-check-input") }}
+                        {{ form.is_manual.label(class="form-check-label") }}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">Ledger Entries</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Currency</th>
+                            <th>Manual</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in entries %}
+                        <tr>
+                            <td>{{ e.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    {{ e.entry_type.replace('_', ' ').title() }}
+                                </span>
+                            </td>
+                            <td>{{ e.description }}</td>
+                            <td>{{ '{:,.2f}'.format(e.amount) }}</td>
+                            <td>{{ e.currency.code if e.currency else '—' }}</td>
+                            <td>
+                                {% if e.is_manual %}
+                                    <span class="badge bg-warning">Manual</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if current_user.has_permission('edit_ledger') %}
+                                <a href="{{ url_for('accounting.edit_ledger_entry',
+                                           id=e.id) }}"
+                                   class="btn btn-sm btn-outline-primary">Edit</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-3">
+                                No ledger entries yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

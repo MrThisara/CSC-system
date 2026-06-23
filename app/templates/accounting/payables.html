@@ -1,0 +1,96 @@
+{% extends "layouts/base.html" %}
+{% block title %}Accounts Payable{% endblock %}
+{% block page_title %}Accounts Payable{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">Add Payable</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('accounting.add_payable') }}">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.supplier_id.label(class="form-label") }}
+                        {{ form.supplier_id(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.po_id.label(class="form-label") }}
+                        {{ form.po_id(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.amount_due.label(class="form-label") }}
+                        {{ form.amount_due(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.currency_id.label(class="form-label") }}
+                        {{ form.currency_id(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.exchange_rate.label(class="form-label") }}
+                        {{ form.exchange_rate(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.due_date.label(class="form-label") }}
+                        {{ form.due_date(class="form-control") }}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">All Payables</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Supplier</th>
+                            <th>PO</th>
+                            <th>Amount Due</th>
+                            <th>Amount Paid</th>
+                            <th>Currency</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in payables %}
+                        <tr>
+                            <td class="fw-semibold">{{ p.supplier.name }}</td>
+                            <td>{{ p.purchase_order.po_number
+                                   if p.purchase_order else '—' }}</td>
+                            <td>{{ '{:,.2f}'.format(p.amount_due) }}</td>
+                            <td>{{ '{:,.2f}'.format(p.amount_paid) }}</td>
+                            <td>{{ p.currency.code if p.currency else 'JPY' }}</td>
+                            <td>{{ p.due_date or '—' }}</td>
+                            <td>
+                                {% if p.status == 'Paid' %}
+                                    <span class="badge bg-success">Paid</span>
+                                {% elif p.status == 'Partial' %}
+                                    <span class="badge bg-warning">Partial</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Unpaid</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-3">
+                                No payables recorded.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

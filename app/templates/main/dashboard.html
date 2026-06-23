@@ -1,0 +1,297 @@
+{% extends "layouts/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Welcome Bar -->
+<div class="mb-4">
+    <h5 class="mb-0">Welcome back, {{ current_user.full_name }}</h5>
+    <div class="text-muted small">{{ current_user.role.name }}</div>
+</div>
+
+<!-- Alert Banners -->
+{% if low_warehouse_stock %}
+<div class="alert alert-danger d-flex align-items-center mb-3">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <strong>{{ low_warehouse_stock|length }} product(s)</strong>
+    &nbsp;at or below warehouse reorder threshold.
+</div>
+{% endif %}
+
+{% if low_shelf_stock %}
+<div class="alert alert-warning d-flex align-items-center mb-3">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <strong>{{ low_shelf_stock|length }} product(s)</strong>
+    &nbsp;at or below shelf reorder threshold.
+</div>
+{% endif %}
+
+{% if pending_transfers %}
+<div class="alert alert-info d-flex align-items-center mb-3">
+    <i class="bi bi-arrow-left-right me-2"></i>
+    <strong>{{ pending_transfers|length }} transfer request(s)</strong>
+    &nbsp;pending warehouse approval.
+</div>
+{% endif %}
+
+{% if pending_pos %}
+<div class="alert alert-warning d-flex align-items-center mb-3">
+    <i class="bi bi-file-earmark-text me-2"></i>
+    <strong>{{ pending_pos|length }} purchase order(s)</strong>
+    &nbsp;awaiting CEO approval.
+</div>
+{% endif %}
+
+<!-- Main Grid -->
+<div class="row g-4">
+
+    <!-- Low Warehouse Stock -->
+    {% if low_warehouse_stock %}
+    <div class="col-md-6">
+        <div class="card shadow-sm border-danger">
+            <div class="card-header fw-semibold text-danger">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                Low Warehouse Stock
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Stock</th>
+                            <th>Threshold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in low_warehouse_stock %}
+                        <tr>
+                            <td>{{ p.name }}</td>
+                            <td class="text-danger fw-semibold">
+                                {{ p.warehouse_stock }}
+                            </td>
+                            <td>{{ p.warehouse_reorder_threshold }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Low Shelf Stock -->
+    {% if low_shelf_stock %}
+    <div class="col-md-6">
+        <div class="card shadow-sm border-warning">
+            <div class="card-header fw-semibold text-warning">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                Low Shelf Stock
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Stock</th>
+                            <th>Threshold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in low_shelf_stock %}
+                        <tr>
+                            <td>{{ p.name }}</td>
+                            <td class="text-warning fw-semibold">
+                                {{ p.shelf_stock }}
+                            </td>
+                            <td>{{ p.shelf_reorder_threshold }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pending Transfer Requests -->
+    {% if pending_transfers %}
+    <div class="col-md-6">
+        <div class="card shadow-sm border-info">
+            <div class="card-header fw-semibold text-info">
+                <i class="bi bi-arrow-left-right me-1"></i>
+                Pending Transfer Requests
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Requested By</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in pending_transfers %}
+                        <tr>
+                            <td>{{ t.product.name }}</td>
+                            <td>{{ t.quantity }}</td>
+                            <td>{{ t.requested_by.full_name }}</td>
+                            <td>
+                                <a href="{{ url_for('warehouse.transfers') }}"
+                                   class="btn btn-sm btn-outline-info">
+                                    Review
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pending Purchase Orders -->
+    {% if pending_pos %}
+    <div class="col-md-6">
+        <div class="card shadow-sm border-warning">
+            <div class="card-header fw-semibold text-warning">
+                <i class="bi bi-file-earmark-text me-1"></i>
+                Purchase Orders Awaiting Approval
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>PO Number</th>
+                            <th>Supplier</th>
+                            <th>Submitted</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for po in pending_pos %}
+                        <tr>
+                            <td class="fw-semibold">{{ po.po_number }}</td>
+                            <td>{{ po.supplier.name }}</td>
+                            <td>
+                                {{ po.submitted_at.strftime('%Y-%m-%d')
+                                   if po.submitted_at else '—' }}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('procurement.po_detail',
+                                           id=po.id) }}"
+                                   class="btn btn-sm btn-outline-warning">
+                                    Review
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Unpaid Payables -->
+    {% if unpaid_payables %}
+    <div class="col-md-6">
+        <div class="card shadow-sm border-danger">
+            <div class="card-header fw-semibold text-danger">
+                <i class="bi bi-arrow-up-circle me-1"></i>
+                Outstanding Payables
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Supplier</th>
+                            <th>Balance</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in unpaid_payables %}
+                        <tr>
+                            <td>{{ p.supplier.name }}</td>
+                            <td class="text-danger fw-semibold">
+                                ¥{{ '{:,.0f}'.format(p.amount_due - p.amount_paid) }}
+                            </td>
+                            <td>{{ p.due_date or '—' }}</td>
+                            <td>
+                                {% if p.status == 'Partial' %}
+                                    <span class="badge bg-warning">Partial</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Unpaid</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Sales -->
+    {% if recent_sales %}
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-cart me-1"></i>
+                Recent Sales
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sale #</th>
+                            <th>Type</th>
+                            <th>Total</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in recent_sales %}
+                        <tr>
+                            <td class="fw-semibold">{{ s.sale_number }}</td>
+                            <td>
+                                {% if s.sale_type == 'walk_in' %}
+                                    <span class="badge bg-secondary">Walk-in</span>
+                                {% else %}
+                                    <span class="badge bg-primary">Bulk</span>
+                                {% endif %}
+                            </td>
+                            <td>¥{{ '{:,.0f}'.format(s.total) }}</td>
+                            <td>{{ s.created_at.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Empty State -->
+    {% if not low_warehouse_stock and not low_shelf_stock and
+          not pending_transfers and not pending_pos and
+          not unpaid_payables and not recent_sales %}
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5 text-muted">
+                <i class="bi bi-check-circle fs-1 text-success d-block mb-3"></i>
+                Everything is in order. No alerts at this time.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

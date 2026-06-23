@@ -1,0 +1,58 @@
+{% extends "layouts/base.html" %}
+{% block title %}Invoices{% endblock %}
+{% block page_title %}Invoices{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Sale #</th>
+                    <th>Type</th>
+                    <th>Customer</th>
+                    <th>Subtotal</th>
+                    <th>Tax</th>
+                    <th>Total</th>
+                    <th>Date</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invoices %}
+                <tr>
+                    <td class="fw-semibold">{{ inv.invoice_number }}</td>
+                    <td>{{ inv.sale.sale_number }}</td>
+                    <td>
+                        {% if inv.sale.sale_type == 'walk_in' %}
+                            <span class="badge bg-secondary">Walk-in</span>
+                        {% else %}
+                            <span class="badge bg-primary">Bulk</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ inv.sale.bulk_buyer.full_name
+                           if inv.sale.bulk_buyer else 'Anonymous' }}
+                    </td>
+                    <td>¥{{ '{:,.0f}'.format(inv.sale.subtotal) }}</td>
+                    <td>¥{{ '{:,.0f}'.format(inv.sale.tax_amount) }}</td>
+                    <td class="fw-semibold">¥{{ '{:,.0f}'.format(inv.sale.total) }}</td>
+                    <td>{{ inv.issued_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <a href="{{ url_for('sales.invoice_detail', id=inv.id) }}"
+                           class="btn btn-sm btn-outline-primary">View</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-3">
+                        No invoices yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "layouts/base.html" %}
+{% block title %}Stock Movements{% endblock %}
+{% block page_title %}Stock Movement Log{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Type</th>
+                    <th>Quantity</th>
+                    <th>Reference</th>
+                    <th>Performed By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in movements %}
+                <tr>
+                    <td>{{ m.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ m.product.name }}</td>
+                    <td>
+                        {% set type_badge = {
+                            'goods_received': 'success',
+                            'transfer_out': 'primary',
+                            'transfer_in': 'info',
+                            'write_off': 'danger',
+                            'sale': 'warning',
+                            'return': 'secondary',
+                            'supplier_return': 'dark'
+                        } %}
+                        <span class="badge bg-{{
+                            type_badge.get(m.movement_type, 'secondary') }}">
+                            {{ m.movement_type.replace('_', ' ').title() }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if m.quantity < 0 %}
+                            <span class="text-danger">{{ m.quantity }}</span>
+                        {% else %}
+                            <span class="text-success">+{{ m.quantity }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ m.reference_type.replace('_', ' ').title()
+                           if m.reference_type else '—' }}
+                        {{ '#' ~ m.reference_id if m.reference_id else '' }}
+                    </td>
+                    <td>{{ m.created_by.full_name if m.created_by else '—' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-3">
+                        No stock movements yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

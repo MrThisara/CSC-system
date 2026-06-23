@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ERP{% endblock %} | CSC ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+
+        #sidebar {
+            width: 250px;
+            min-height: 100vh;
+            background-color: #212529;
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding-top: 60px;
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        #sidebar .nav-link {
+            color: #adb5bd;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+        }
+
+        #sidebar .nav-link:hover,
+        #sidebar .nav-link.active {
+            color: #ffffff;
+            background-color: #343a40;
+        }
+
+        #sidebar .nav-link i {
+            margin-right: 8px;
+        }
+
+        #sidebar .sidebar-heading {
+            color: #6c757d;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 16px 20px 4px;
+        }
+
+        #topbar {
+            height: 60px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #dee2e6;
+            position: fixed;
+            top: 0;
+            left: 250px;
+            right: 0;
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            justify-content: space-between;
+        }
+
+        #main-content {
+            margin-left: 250px;
+            padding-top: 80px;
+            padding-left: 24px;
+            padding-right: 24px;
+            padding-bottom: 40px;
+        }
+
+        .sidebar-brand {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 60px;
+            background-color: #212529;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 101;
+            border-bottom: 1px solid #343a40;
+        }
+
+        .sidebar-brand span {
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Sidebar Brand -->
+    <div class="sidebar-brand">
+        <span><i class="bi bi-box-seam me-2"></i>CSC pvt. Ltd.</span>
+    </div>
+
+    <!-- Sidebar -->
+    <nav id="sidebar">
+
+        {% set role = current_user.role.name %}
+
+        <!-- Dashboard -->
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}"
+                   href="{{ url_for('main.dashboard') }}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+        </ul>
+
+        <!-- Admin -->
+        {% if role == 'CEO' %}
+        <div class="sidebar-heading">Admin</div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.company_settings') }}">
+                    <i class="bi bi-gear"></i> Company Settings
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.users') }}">
+                    <i class="bi bi-people"></i> Users & Roles
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.currencies') }}">
+                    <i class="bi bi-currency-exchange"></i> Currencies
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.units') }}">
+                    <i class="bi bi-rulers"></i> Units
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.audit_log') }}">
+                    <i class="bi bi-clock-history"></i> Audit Log
+                </a>
+            </li>
+        </ul>
+        {% endif %}
+
+        <!-- Procurement -->
+        {% if role in ['CEO', 'Procurement Officer'] %}
+        <div class="sidebar-heading">Procurement</div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('procurement.suppliers') }}">
+                    <i class="bi bi-truck"></i> Suppliers
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('procurement.products') }}">
+                    <i class="bi bi-box"></i> Products
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('procurement.purchase_orders') }}">
+                    <i class="bi bi-file-earmark-text"></i> Purchase Orders
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('procurement.supplier_returns') }}">
+                    <i class="bi bi-arrow-return-left"></i> Supplier Returns
+                </a>
+            </li>
+        </ul>
+        {% endif %}
+
+        <!-- Warehouse -->
+        {% if role in ['CEO', 'Warehouse Manager', 'Warehouse Worker'] %}
+        <div class="sidebar-heading">Warehouse</div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('warehouse.inventory') }}">
+                    <i class="bi bi-building"></i> Inventory
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('warehouse.transfers') }}">
+                    <i class="bi bi-arrow-left-right"></i> Transfer Requests
+                </a>
+            </li>
+            {% if role in ['CEO', 'Warehouse Manager'] %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('warehouse.write_offs') }}">
+                    <i class="bi bi-x-circle"></i> Write-offs
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('warehouse.movements') }}">
+                    <i class="bi bi-clock-history"></i> Stock Movements
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+        {% endif %}
+
+        <!-- Sales -->
+        {% if role in ['CEO', 'Sales Staff'] %}
+        <div class="sidebar-heading">Sales</div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('sales.new_sale') }}">
+                    <i class="bi bi-cart"></i> New Sale
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('sales.bulk_buyers') }}">
+                    <i class="bi bi-people"></i> Bulk Buyers
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('sales.bulk_orders') }}">
+                    <i class="bi bi-bag"></i> Bulk Orders
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('sales.invoices') }}">
+                    <i class="bi bi-receipt"></i> Invoices
+                </a>
+            </li>
+            <li>
+                <a class="nav-link" href="{{ url_for('sales.transfer_requests') }}">
+                    <i class="bi bi-arrow-left-right"></i> Transfer Requests
+                </a>
+            </li>
+            <li>
+                <a class="nav-link" href="{{ url_for('sales.customer_returns') }}">
+                    <i class="bi bi-arrow-return-left"></i> Customer Returns
+                </a>
+            </li>
+        </ul>
+        {% endif %}
+
+        <!-- Accounting -->
+        {% if role in ['CEO', 'Accountant'] %}
+        <div class="sidebar-heading">Accounting</div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('accounting.ledger') }}">
+                    <i class="bi bi-journal-text"></i> Ledger
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('accounting.payables') }}">
+                    <i class="bi bi-arrow-up-circle"></i> Payables
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('accounting.receivables') }}">
+                    <i class="bi bi-arrow-down-circle"></i> Receivables
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('accounting.payments') }}">
+                    <i class="bi bi-cash"></i> Payments
+                </a>
+            </li>
+            <li>
+                <a class="nav-link" href="{{ url_for('accounting.tax_entries') }}">
+                    <i class="bi bi-percent"></i> Tax
+                </a>
+            </li>
+        </ul>
+        {% endif %}
+
+        <!-- Reporting -->
+        {% if current_user.has_permission('view_reports') %}
+        <div class="sidebar-heading">Reporting</div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('reporting.reports') }}">
+                    <i class="bi bi-bar-chart"></i> Reports
+                </a>
+            </li>
+        </ul>
+        {% endif %}
+
+    </nav>
+
+    <!-- Topbar -->
+    <div id="topbar">
+        <div class="fw-semibold text-muted fs-6">
+            {% block page_title %}{% endblock %}
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <span class="text-muted fs-6">
+                <i class="bi bi-person-circle me-1"></i>
+                {{ current_user.full_name }}
+                <span class="badge bg-secondary ms-1">{{ current_user.role.name }}</span>
+            </span>
+            <a href="{{ url_for('auth.change_password') }}"
+                    class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-key"></i> Password
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content">
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

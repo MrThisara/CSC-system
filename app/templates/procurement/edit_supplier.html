@@ -1,0 +1,55 @@
+{% extends "layouts/base.html" %}
+{% block title %}Edit Supplier{% endblock %}
+{% block page_title %}Edit Supplier{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">{{ supplier.name }}</div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.contact_name.label(class="form-label") }}
+                        {{ form.contact_name(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.phone.label(class="form-label") }}
+                        {{ form.phone(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.country.label(class="form-label") }}
+                        {{ form.country(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.lead_time_days.label(class="form-label") }}
+                        {{ form.lead_time_days(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.currency_id.label(class="form-label") }}
+                        {{ form.currency_id(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.address.label(class="form-label") }}
+                        {{ form.address(class="form-control", rows=2) }}
+                    </div>
+                    <div class="d-flex gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('procurement.suppliers') }}"
+                           class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

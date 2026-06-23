@@ -1,0 +1,114 @@
+{% extends "layouts/base.html" %}
+{% block title %}Products{% endblock %}
+{% block page_title %}Products{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">Add Product</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('procurement.add_product') }}">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.sku.label(class="form-label") }}
+                        {{ form.sku(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.unit_id.label(class="form-label") }}
+                        {{ form.unit_id(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.selling_price.label(class="form-label") }}
+                        {{ form.selling_price(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.warehouse_reorder_threshold.label(class="form-label") }}
+                        {{ form.warehouse_reorder_threshold(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.shelf_reorder_threshold.label(class="form-label") }}
+                        {{ form.shelf_reorder_threshold(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.bulk_limit.label(class="form-label") }}
+                        {{ form.bulk_limit(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows=2) }}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">All Products</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>SKU</th>
+                            <th>Name</th>
+                            <th>Unit</th>
+                            <th>Price (JPY)</th>
+                            <th>AVCO</th>
+                            <th>W. Stock</th>
+                            <th>S. Stock</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in products %}
+                        <tr>
+                            <td class="fw-semibold">{{ p.sku }}</td>
+                            <td>{{ p.name }}</td>
+                            <td>{{ p.unit.abbreviation if p.unit else '—' }}</td>
+                            <td>¥{{ '{:,.0f}'.format(p.selling_price) }}</td>
+                            <td>¥{{ '{:,.2f}'.format(p.avco_cost) }}</td>
+                            <td>
+                                {% if p.warehouse_stock <= p.warehouse_reorder_threshold %}
+                                    <span class="text-danger fw-semibold">
+                                        {{ p.warehouse_stock }}
+                                    </span>
+                                {% else %}
+                                    {{ p.warehouse_stock }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if p.shelf_stock <= p.shelf_reorder_threshold %}
+                                    <span class="text-warning fw-semibold">
+                                        {{ p.shelf_stock }}
+                                    </span>
+                                {% else %}
+                                    {{ p.shelf_stock }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('procurement.edit_product', id=p.id) }}"
+                                   class="btn btn-sm btn-outline-primary">Edit</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-3">No products yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

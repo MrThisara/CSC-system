@@ -1,0 +1,55 @@
+{% extends "layouts/base.html" %}
+{% block title %}Edit Product{% endblock %}
+{% block page_title %}Edit Product{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">{{ product.name }}</div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.sku.label(class="form-label") }}
+                        {{ form.sku(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.unit_id.label(class="form-label") }}
+                        {{ form.unit_id(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.selling_price.label(class="form-label") }}
+                        {{ form.selling_price(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.warehouse_reorder_threshold.label(class="form-label") }}
+                        {{ form.warehouse_reorder_threshold(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.shelf_reorder_threshold.label(class="form-label") }}
+                        {{ form.shelf_reorder_threshold(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.bulk_limit.label(class="form-label") }}
+                        {{ form.bulk_limit(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows=2) }}
+                    </div>
+                    <div class="d-flex gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('procurement.products') }}"
+                           class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

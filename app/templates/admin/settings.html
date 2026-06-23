@@ -1,0 +1,54 @@
+{% extends "layouts/base.html" %}
+{% block title %}Company Settings{% endblock %}
+{% block page_title %}Company Settings{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.company_name.label(class="form-label") }}
+                        {{ form.company_name(class="form-control") }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.address.label(class="form-label") }}
+                        {{ form.address(class="form-control", rows=3) }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col mb-3">
+                            {{ form.phone.label(class="form-label") }}
+                            {{ form.phone(class="form-control") }}
+                        </div>
+                        <div class="col mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control") }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col mb-3">
+                            {{ form.tax_rate.label(class="form-label") }}
+                            {{ form.tax_rate(class="form-control") }}
+                            <div class="form-text">Enter as decimal — 0.1000 = 10%</div>
+                        </div>
+                        <div class="col mb-3">
+                            {{ form.base_currency.label(class="form-label") }}
+                            {{ form.base_currency(class="form-control") }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

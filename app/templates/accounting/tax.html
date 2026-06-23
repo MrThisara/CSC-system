@@ -1,0 +1,128 @@
+{% extends "layouts/base.html" %}
+{% block title %}Tax Entries{% endblock %}
+{% block page_title %}Tax Entries{% endblock %}
+
+{% block content %}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-success">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Total Tax Collected</div>
+                <div class="fs-4 fw-semibold text-success">
+                    ¥{{ '{:,.2f}'.format(collected_total) }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-danger">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Total Tax Paid</div>
+                <div class="fs-4 fw-semibold text-danger">
+                    ¥{{ '{:,.2f}'.format(paid_total) }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Net Tax Position</div>
+                <div class="fs-4 fw-semibold
+                    {{ 'text-success' if collected_total >= paid_total
+                       else 'text-danger' }}">
+                    ¥{{ '{:,.2f}'.format(collected_total - paid_total) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">Add Tax Entry</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('accounting.add_tax_entry') }}">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.tax_type.label(class="form-label") }}
+                        {{ form.tax_type(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.amount.label(class="form-label") }}
+                        {{ form.amount(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.tax_rate.label(class="form-label") }}
+                        {{ form.tax_rate(class="form-control") }}
+                        <div class="form-text">e.g. 0.1000 = 10%</div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.reference_type.label(class="form-label") }}
+                        {{ form.reference_type(class="form-control",
+                           placeholder="e.g. sale") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.reference_id.label(class="form-label") }}
+                        {{ form.reference_id(class="form-control",
+                           placeholder="e.g. 42") }}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">All Tax Entries</div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Rate</th>
+                            <th>Reference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in entries %}
+                        <tr>
+                            <td>{{ e.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if e.tax_type == 'collected' %}
+                                    <span class="badge bg-success">Collected</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Paid</span>
+                                {% endif %}
+                            </td>
+                            <td>¥{{ '{:,.2f}'.format(e.amount) }}</td>
+                            <td>{{ (e.tax_rate * 100)|round(1) }}%</td>
+                            <td>
+                                {{ e.reference_type.replace('_', ' ').title()
+                                   if e.reference_type else '—' }}
+                                {{ '#' ~ e.reference_id if e.reference_id else '' }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">
+                                No tax entries yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
