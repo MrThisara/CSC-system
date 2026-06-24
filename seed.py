@@ -1,6 +1,7 @@
 from app import create_app
 from app.extensions import db, bcrypt
 from app.models.user import User, Role, Permission
+import os
 
 app = create_app()
 
@@ -92,9 +93,9 @@ ROLES = {
 }
 
 DEFAULT_CEO = {
-    'full_name': 'System Admin',
-    'email': 'admin@erp.com',
-    'password': 'admin1234',
+    'full_name': os.environ.get ('SEED_ADMIN_NAME', 'System Admin'),
+    'email': os.environ.get ('SEED_ADMIN_EMAIL' 'admin@erp.com'),
+    'password': os.environ.get ('SEED_ADMIN_PASSWORD' 'admin1234'),
 }
 
 def seed():
